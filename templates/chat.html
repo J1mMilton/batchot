@@ -50,15 +50,11 @@
 		<script>
 
 			$(document).ready(function() {
-				// const welcomeMessage = 'Hello! I am your friendly AI English tutor. How can I assist you today?';
-				// const welcomeHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + welcomeMessage + '</div></div>';
-				// $("#messageFormeight").append($.parseHTML(welcomeHtml));
-
 				$.ajax({
 					type: "POST",
 					url: "/get",
 				}).done(function(data) {
-					var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data.msg + '</div></div>';
+					var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '</div></div>';
 					$("#messageFormeight").append($.parseHTML(botHtml));
 				});
 
@@ -81,13 +77,8 @@
 						type: "POST",
 						url: "/get",
 					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data.msg + '<span class="msg_time">' + str_time + '</span></div></div>';
+						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
 						$("#messageFormeight").append($.parseHTML(botHtml));
-
-						// if (data.explanation) {
-						// 	var explanationHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data.explanation + '<span class="msg_time">' + str_time + '</span></div></div>';
-						// 	$("#messageFormeight").append($.parseHTML(explanationHtml));
-						// }
 					});
 					event.preventDefault();
 				});
