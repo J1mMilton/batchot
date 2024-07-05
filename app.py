@@ -1,72 +1,64 @@
-from flask import Flask, render_template, request, session
-from openai import OpenAI
+from flask import Flask, render_template, request, session,jsonify
+import openai
 from dotenv import load_dotenv
 import os
-
-os.environ["http_proxy"] = "http://localhost:33210"
-os.environ["https_proxy"] = "http://localhost:33210"
+from langchain_openai.chat_models import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv('OPENAI_API_KEY4'),  # Access the API key from environment variable
-)
+os.environ["http_proxy"] = "http://localhost:33210"
+os.environ["https_proxy"] = "http://localhost:33210"
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY4")
 
-# print(client.api_key)
+store = {}
+first = True
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
 
 app = Flask(__name__)
 app.secret_key = 'secretkey'  # Replace with your secret key
 
 @app.route("/")
 def index():
-    session.clear()  # Clear the session when a new conversation starts
+    global first
+    store.clear()  # Clear the session when a new conversation starts
+    first = True
     return render_template('chat.html')
 
 @app.route("/get", methods=["GET", "POST"])
 def chat():
-    if 'chat_messages' not in session:
-        session['chat_messages'] = [{'role': 'system', 'content': '### Instructions ###\
-You are an English Grammar Detector. Your task is to correct grammar and spelling mistakes in the user\'s input. Follow these specific rules:\
-1. Correct Mistakes: Identify and correct any grammar or spelling mistakes. Do not forget the original input.\
-Do not change the meaning of the original input.\
-2. Highlight Corrections: Compare the corrected input and the original input,\
-and find their different words in terms of subjects, verbs, objects, or compliments.\
-Surround each different word you find with `**`.\
-3. Normalize Case: Ensure proper capitalization (e.g., capitalize the first letter of sentences and proper nouns).\
-4. Please do not forget to highlight any words.\
-### Examples ###\
-# Input: "I goes to the market." Output: "I **went** to the market."\
-# Input: "The apple was very juicy." Output: "The apple was very juicy."\
-# Input: "He buyed a new book." Output: "He **bought** a new book."\
-# Input: "The Apples are red." Output: "The apples are red."\
-'}]
+    global store;
+    global first;
+    if first:
         welcome_message = 'Hello! Please type something and I will correct your grammar mistakes.'
-        session['chat_messages'].append({'role': 'assistant', 'content': welcome_message})
-        session.modified = True  # Mark the session as modified so it gets saved
+        first = False
         return welcome_message
-
+    prompt = """\
+You are an English Grammar Detector. Your task is to correct grammar and spelling mistakes in the original input that is delimited by triple backticks. Follow these specific rules:\
+1. Correct Mistakes: Identify and correct any grammar or spelling mistakes in the input. Do not change the meaning of the original input.\
+After the correction, you surround each word you corrected with **.\
+2. Normalize Case: Ensure proper capitalization (e.g., capitalize the first letter of sentences and proper nouns).\
+3. You only output the final string.
+Original input: ```{text}```
+"""
+    llm_model = "gpt-3.5-turbo"
+    chatbot = ChatOpenAI(temperature=0.0, model=llm_model)
+    prompt_template = ChatPromptTemplate.from_template(prompt)
     msg = request.form["msg"]
     input = msg
-    session['chat_messages'].append({'role': 'user', 'content': input})
-    session.modified = True  # Mark the session as modified so it gets saved
-    return get_openai_response(session['chat_messages'])
+    user_messages = prompt_template.format_messages(text=input)
+    with_message_history = RunnableWithMessageHistory(chatbot, get_session_history)
+    config = {"configurable": {"session_id": "demo"}}
+    response = with_message_history.invoke(user_messages, config=config)
+    return str(response.content)
 
-def get_openai_response(messages):
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=1000  # Limit the response length
-        )
-
-        response = completion.choices[0].message.content
-        session['chat_messages'].append({'role': 'assistant', 'content': response})
-        session.modified = True  # Mark the session as modified so it gets saved
-
-        return response
-    except Exception as e:
-        app.logger.error(f"Error connecting to OpenAI API: {e}")
-        return "There was an error connecting to the OpenAI API."
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
