@@ -41,11 +41,14 @@ def chat():
         first = False
         return welcome_message
     prompt = """\
-You are an English Grammar Detector. Your task is to correct grammar and spelling mistakes in the original input that is delimited by triple backticks. Follow these specific rules:\
-1. Correct Mistakes: Identify and correct any grammar or spelling mistakes in the input. Do not change the meaning of the original input.\
-After the correction, you surround each word you corrected with **.\
-2. Normalize Case: Ensure proper capitalization (e.g., capitalize the first letter of sentences and proper nouns).\
-3. You only output the final string.
+You are an English Grammar Detector. Your task is to correct grammatical and spelling mistakes in the original input that is delimited by triple backticks. Follow these specific rules:\
+1. Do not confuse grammatical mistakes with spelling mistakes. You first correct the spelling mistakes, then the grammatical mistakes. \
+2. This step is very important, never forget this. When you are correcting and only correcting a spelling mistake, you surround the corrected word with ##. \
+3. This step is very important, never forget this. When you are correcting and only correcting a grammatical mistake, you surround the corrected word with **. \
+4. Normalize Case: Ensure proper capitalization (e.g., capitalize the first letter of sentences and proper nouns).\
+5. You generate only the final output in the first paragraph (don't include the string "the final output"), then in the second paragraph you generate only a Chinese explanation of the mistakes in the original input.\
+6. There must be a line break between the first and the second paragraph.\
+7. Example: from "Nice meet you. i'm olld enough" to "Nice **to** meet you. I'm ##old## enough".
 Original input: ```{text}```
 """
     llm_model = "gpt-3.5-turbo"

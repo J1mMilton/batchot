@@ -228,3 +228,8 @@ border-radius: 0 0 15px 15px !important;
 	color: tomato;
 	text-decoration: underline;
 }
+
+.special-font2 {
+	font-weight: bold;
+	color: deepskyblue;
+}

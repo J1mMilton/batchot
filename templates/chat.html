@@ -54,11 +54,16 @@
 					return text.replace(/\*\*(.*?)\*\*/g, '<span class="special-font">$1</span>');
 				}
 
+				function formatText2(text) {
+					return text.replace(/##(.*?)##/g, '<span class="special-font2">$1</span>');
+				}
+
 				$.ajax({
 					type: "POST",
 					url: "/get",
 				}).done(function(data) {
 					var formattedData = formatText(data);
+					formattedData = formatText2(formattedData)
 					var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + formattedData + '</div></div>';
 					$("#messageFormeight").append($.parseHTML(botHtml));
 				});
@@ -71,6 +76,7 @@
 					var rawText = $("#text").val();
 
 					var formattedText = formatText(rawText);
+					formattedText = formatText2(formattedText)
 					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + formattedText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
 					
 					$("#text").val("");
@@ -84,6 +90,7 @@
 						url: "/get",
 					}).done(function(data) {
 						var formattedData = formatText(data);
+						formattedData = formatText2(formattedData)
 						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/fSNP7Rz/icons8-chatgpt-512.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + formattedData + '<span class="msg_time">' + str_time + '</span></div></div>';
 						$("#messageFormeight").append($.parseHTML(botHtml));
 					});
