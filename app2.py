@@ -65,7 +65,7 @@ def get_response(query):
         "\n\n{para}"
     )
     chain_one = LLMChain(llm=llm, prompt=first_prompt,
-                         # output_key="para2"
+                         output_key="para2"
                          )
     second_prompt = ChatPromptTemplate.from_template(
         "Keep the original **s in the input. Slightly improve the language of the input. Anytime you changed a word, you must surround the changed word with ##."
@@ -77,17 +77,17 @@ def get_response(query):
     chain_two = LLMChain(llm=llm, prompt=second_prompt,
                          output_key="para3"
                          )
-    overall_chain = SimpleSequentialChain(
+    overall_chain = SequentialChain(
         chains=[chain_one, chain_two],
-        # input_variables=["para"],
-        # output_variables=["para3"],
+        input_variables=["para"],
+        output_variables=["para3"],
         verbose=True
     )
 
 
     # chain = prompt_template | chatbot | StrOutputParser()
 
-    for text in overall_chain.run(query):
+    for text in overall_chain(query).get("para3"):
         yield text
 
 if not st.session_state.chat_history:
